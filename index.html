@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Messenger-like Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .bubble {
+            width: 100%;
+            width: fit-content;     
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            word-wrap: break-word;
+            word-break: break-word;
+            display: inline-block;
+            white-space: pre-wrap;
+        }
+        
+        .bubble-left {
+            background: linear-gradient(to left, #f3f4f6, #e5e7eb);
+            color: #1f2937;         
+            animation: pop 0.2s ease-out;
+            margin-right: 10rem;
+        }
+    
+        .bubble-right {
+            background: linear-gradient(to right, #3b82f6, #1d4ed8);
+            color: #ffffff;        
+            animation: pop 0.2s ease-out;
+            margin-left: 10rem;
+        }
+    
+        @keyframes pop {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+
+    </style>
+
+</head>
+
+<body class="bg-gray-100 h-screen flex flex-col justify-center items-center">
+    <div class="bg-white w-full max-w-md shadow-xl rounded-xl overflow-hidden flex flex-col h-[600px]">
+        <div class="bg-blue-600 text-white text-center py-3 text-lg font-semibold">💬 Chat App</div>
+
+        <div id="chat" class="flex-1 p-4 space-y-2 overflow-y-auto"></div>
+
+        <div id="typing" class="px-4 text-sm text-gray-500 h-5"></div>
+
+        <div class="p-4 border-t flex gap-2">
+            <textarea id="messageInput" type="text" placeholder="Type a message..."
+                class="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                oninput="notifyTyping()"
+                rows="1"
+                onkeydown="handleKeyDown(event)"
+                style="resize: none;"></textarea>
+            <button onclick="sendMessage()"
+                class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:3000');
+        const chatDiv = document.getElementById('chat');
+        const input = document.getElementById('messageInput');
+        const typingDiv = document.getElementById('typing');
+        const username = prompt("Enter your username") || "Anonymous"
+
+        let id = sessionStorage.getItem('chat_user_id');
+        console.log(id)
+        if (!id) {
+            id = uuidv4();
+            sessionStorage.setItem('chat_user_id', id);
+        }
+
+        let typingTimeout;
+
+        window.addEventListener('beforeunload', () => {
+            ws.send(JSON.stringify({ type: 'leave', sender: { id, name: username } }));
+        });
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'message') {
+                createMessageBubble(data.text, data.sender);
+            }
+
+            if (data.type === 'typing') {
+                typingDiv.textContent = `👀 ${data.sender.name} is typing...`;
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    typingDiv.textContent = '';
+                }, 1500);
+            }
+
+            if (data.type === 'join') {
+                createNotification(`${data.sender.name} joined the chat 🎉`);
+            }
+
+            if (data.type === 'leave') {
+                createNotification(`${data.sender.name} left the chat 👋`);
+            };
+        };
+
+        ws.onopen = () => {
+            sendJoin()
+        }
+
+        ws.onclose = () => {
+            sendClose()
+        }
+
+        function uuidv4() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+
+
+        function sendMessage() {
+            const message = input.value.trim();
+            if (message) {
+                const sender = { id, name: username };
+                ws.send(JSON.stringify({ type: 'message', text: message, sender }));
+                input.value = '';
+                createMessageBubble(message, sender);
+            }
+        }
+
+        function createNotification(text) {
+            const container = document.createElement('div');
+            container.className = 'text-center text-gray-400 text-sm italic';
+            container.textContent = text;
+            chatDiv.appendChild(container);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        function createMessageBubble(text, sender) {
+            const isSelf = sender.id === id;
+
+            const container = document.createElement('div');
+            container.className = `${isSelf ? 'flex justify-end' : 'flex justify-start'}`;
+
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = 'flex flex-col';
+            
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${isSelf ? 'bubble-right' : 'bubble-left'}`;
+
+            if (!isSelf) {
+                const name = document.createElement('div');
+                name.className = 'text-xs font-semibold mb-1';
+                name.textContent = sender.name;
+                messageWrapper.appendChild(name);
+            }
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'text-sm w-full';
+            textDiv.textContent = text;
+
+            const time = document.createElement('div');
+            time.className = `text-xs ${isSelf ? 'text-right' : 'text-left'} text-gray-500 mt-1`;
+            time.textContent = formatTime();
+            
+            bubble.appendChild(textDiv);
+            messageWrapper.appendChild(bubble);
+            messageWrapper.append(time);
+            container.appendChild(messageWrapper);
+            chatDiv.appendChild(container);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+
+        function notifyTyping() {
+            ws.send(JSON.stringify({ type: 'typing', sender: { id, name: username }, }));
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) { 
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function formatTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function sendJoin() {
+            ws.send(JSON.stringify({ type: 'join', sender: { id, name: username } }));
+        }
+
+        function sendClose() {
+            ws.send(JSON.stringify({ type: 'leave', sender: { id, name: username } }));
+        }
+    </script>
+</body>
+
+</html>
