@@ -50,5 +50,5 @@ wss.on("connection", (ws) => {
 
 
 server.listen(3000,() => {
-  console.log("http://localhost:3000")
+  console.log("https://janhae4.github.io/Chat-basic-websocket/")
 })
