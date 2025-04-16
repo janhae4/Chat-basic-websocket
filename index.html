@@ -287,6 +287,15 @@
             reader.readAsDataURL(file);
         })
 
+        document.addEventListener('click', function (event) {
+        const isClickInsidePicker = picker.contains(event.target);
+        const isClickOnToggleButton = document.getElementById('messageEmoji').contains(event.target);
+
+        if (!isClickInsidePicker && !isClickOnToggleButton) {
+            picker.classList.add('hidden');
+        }
+    });
+
         </script>
 </body>
 
