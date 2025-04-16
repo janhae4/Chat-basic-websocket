@@ -1,303 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Messenger-like Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"
+    ></script>
 
     <style>
-        .bubble {
-            width: 100%;
-            width: fit-content;     
-            padding: 0.5rem 1rem;
-            border-radius: 1rem;
-            word-wrap: break-word;
-            word-break: break-word;
-            display: inline-block;
-            white-space: pre-wrap;
-        }
-        
-        .bubble-left {
-            background: linear-gradient(to left, #f3f4f6, #e5e7eb);
-            color: #1f2937;         
-            animation: pop 0.2s ease-out;
-            margin-right: 10rem;
-        }
-    
-        .bubble-right {
-            background: linear-gradient(to right, #3b82f6, #1d4ed8);
-            color: #ffffff;        
-            animation: pop 0.2s ease-out;
-            margin-left: 10rem;
-        }
-    
-        @keyframes pop {
-            0% { transform: scale(0.95); opacity: 0.5; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-    
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
+      .bubble {
+        width: 100%;
+        width: fit-content;
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        word-wrap: break-word;
+        word-break: break-word;
+        display: inline-block;
+        white-space: pre-wrap;
+      }
 
+      .bubble-left {
+        background: linear-gradient(to left, #f3f4f6, #e5e7eb);
+        color: #1f2937;
+        animation: pop 0.2s ease-out;
+        margin-right: 10rem;
+      }
 
+      .bubble-right {
+        background: linear-gradient(to right, #3b82f6, #1d4ed8);
+        color: #ffffff;
+        animation: pop 0.2s ease-out;
+        margin-left: 10rem;
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0.95);
+          opacity: 0.5;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .chat-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
     </style>
+  </head>
 
-</head>
+  <body class="bg-gray-100 h-screen flex flex-col justify-center items-center">
+    <div
+      class="bg-white w-full max-w-md shadow-xl rounded-xl overflow-hidden flex flex-col h-[600px]"
+    >
+      <div
+        class="bg-blue-600 text-white text-center py-3 text-lg font-semibold"
+      >
+        💬 Chat App
+      </div>
 
-<body class="bg-gray-100 h-screen flex flex-col justify-center items-center">
-    <div class="bg-white w-full max-w-md shadow-xl rounded-xl overflow-hidden flex flex-col h-[600px]">
-        <div class="bg-blue-600 text-white text-center py-3 text-lg font-semibold">💬 Chat App</div>
+      <div id="chat" class="flex-1 p-4 space-y-2 overflow-y-auto"></div>
 
-        <div id="chat" class="flex-1 p-4 space-y-2 overflow-y-auto"></div>
-
-        <div id="typing" class="px-4 text-sm text-gray-500 h-5"></div>
-
-        <div class="p-4 border-t flex flex-col gap-2">
-        
-            <div id="preview-container" class="mb-2 hidden relative">
-                <img id="preview-img" class="max-w-[150px] rounded-md" />
-                <button onclick="cancelPreview()" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex justify-center items-center text-sm">×</button>
-            </div>
-            <div class="flex gap-2">
-            <textarea id="messageInput" type="text" placeholder="Type a message..."
-                class="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
-                oninput="notifyTyping()"
-                rows="1"
-                onkeydown="handleKeyDown(event)"
-                style="resize: none;"></textarea>
-            <button id="messageEmoji" onclick="toggleEmojiPicker()" class="rounded-full w-10 h-10 flex items-center justify-center bg-yellow-100">🫠</button>
-            <label for="input-file" class="rounded-full w-10 h-10 flex items-center justify-center bg-gray-100 cursor-pointer">🔗</label>
-            <input id="input-file" type="file" class="hidden" accept="image/*" size="1024">
-            <button onclick="sendMessage()"
-                class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600">Send</button>
-            </div>
-            <emoji-picker id="emojiPicker" class="absolute bottom-20 hidden z-50"></emoji-picker>
-            </div>
+      <div id="typing" class="px-4 text-sm text-gray-500 h-5"></div>
+      <div class="p-4 border-t flex flex-col gap-2">
+        <div id="preview-container" class="mb-2 hidden relative">
+          <img id="preview-img" class="max-w-[150px] rounded-md" />
+          <button
+            onclick="cancelPreview()"
+            class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex justify-center items-center text-sm"
+          >
+            ×
+          </button>
         </div>
+        <div class="flex gap-2">
+            <textarea
+            id="messageInput"
+            type="text"
+            placeholder="Type a message..."
+            class="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            oninput="notifyTyping()"
+            rows="1"
+            onkeydown="handleKeyDown(event)"
+            style="resize: none"
+            ></textarea>
+            <div id="emoji-wrapper" class="relative">
+            <button
+              id="messageEmoji"
+              onclick="toggleEmojiPicker()"
+              class="rounded-full w-10 h-10 flex items-center justify-center bg-yellow-100"
+            >
+              🫠
+            </button>
+          
+            <emoji-picker
+              id="emojiPicker"
+              class="absolute bottom-12 -right-10 z-50 hidden bg-white rounded-xl shadow-lg border max-w-s"
+              style="width: 320px"
+            ></emoji-picker>
+          </div>
+          <label
+            for="input-file"
+            class="rounded-full w-10 h-10 flex items-center justify-center bg-gray-100 cursor-pointer"
+            >🔗</label
+          >
+          <input
+            id="input-file"
+            type="file"
+            class="hidden"
+            accept="image/*"
+            size="1024"
+          />
+          <button
+            onclick="sendMessage()"
+            class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600"
+          >
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
 
     <script>
-        const ws = new WebSocket('wss://chat-basic-websocket.onrender.com');
-        const chatDiv = document.getElementById('chat');
-        const input = document.getElementById('messageInput');
-        const typingDiv = document.getElementById('typing');
-        const username = prompt("Enter your username") || "Anonymous"
-        const picker = document.getElementById('emojiPicker');
-        const fileInput = document.getElementById('input-file');
+      const ws = new WebSocket("wss://chat-basic-websocket.onrender.com");
+      const chatDiv = document.getElementById("chat");
+      const input = document.getElementById("messageInput");
+      const typingDiv = document.getElementById("typing");
+      const username = prompt("Enter your username") || "Anonymous";
+      const picker = document.getElementById("emojiPicker");
+      const fileInput = document.getElementById("input-file");
 
-        let id = sessionStorage.getItem('chat_user_id');
-        console.log(id)
-        if (!id) {
-            id = uuidv4();
-            sessionStorage.setItem('chat_user_id', id);
+      let id = sessionStorage.getItem("chat_user_id");
+      console.log(id);
+      if (!id) {
+        id = uuidv4();
+        sessionStorage.setItem("chat_user_id", id);
+      }
+
+      let typingTimeout;
+
+      window.addEventListener("beforeunload", () => {
+        ws.send(
+          JSON.stringify({ type: "leave", sender: { id, name: username } })
+        );
+      });
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "message") {
+          if (data.file) {
+            createMessageBubble("[file]", data.sender, data.file);
+          } else {
+            createMessageBubble(data.text, data.sender);
+          }
         }
 
-        let typingTimeout;
+        if (data.type === "typing") {
+          typingDiv.textContent = `👀 ${data.sender.name} is typing...`;
+          clearTimeout(typingTimeout);
+          typingTimeout = setTimeout(() => {
+            typingDiv.textContent = "";
+          }, 1500);
+        }
 
-        window.addEventListener('beforeunload', () => {
-            ws.send(JSON.stringify({ type: 'leave', sender: { id, name: username } }));
-        });
+        if (data.type === "join") {
+          createNotification(`${data.sender.name} joined the chat 🎉`);
+        }
 
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+        if (data.type === "leave") {
+          createNotification(`${data.sender.name} left the chat 👋`);
+        }
+      };
 
-            if (data.type === 'message') {
-                if (data.file) {
-                    createMessageBubble("[file]", data.sender, data.file);
-                } else {
-                    createMessageBubble(data.text, data.sender);
-                }
-            }
+      ws.onopen = () => {
+        sendJoin();
+      };
 
-            if (data.type === 'typing') {
-                typingDiv.textContent = `👀 ${data.sender.name} is typing...`;
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
-                    typingDiv.textContent = '';
-                }, 1500);
-            }
+      ws.onclose = () => {
+        sendClose();
+      };
 
-            if (data.type === 'join') {
-                createNotification(`${data.sender.name} joined the chat 🎉`);
-            }
+      function uuidv4() {
+        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+          (
+            c ^
+            (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+          ).toString(16)
+        );
+      }
 
-            if (data.type === 'leave') {
-                createNotification(`${data.sender.name} left the chat 👋`);
-            };
+      function sendMessage(fileData = null) {
+        const message = input.value.trim();
+        const sender = { id, name: username };
+        if (!message && !fileData) return;
+
+        const payload = {
+          type: "message",
+          sender,
         };
 
-        ws.onopen = () => {
-            sendJoin()
+        if (fileData) {
+          payload.file = fileData;
+        } else {
+          payload.text = message;
         }
 
-        ws.onclose = () => {
-            sendClose()
+        ws.send(JSON.stringify(payload));
+
+        if (fileData) {
+          console.log(sender);
+          createMessageBubble("[file]", sender, fileData);
+        } else {
+          createMessageBubble(message, sender);
+          input.value = "";
+        }
+      }
+
+      function createNotification(text) {
+        const container = document.createElement("div");
+        container.className = "text-center text-gray-400 text-sm italic";
+        container.textContent = text;
+        chatDiv.appendChild(container);
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+      }
+
+      function createMessageBubble(text, sender, fileData = null) {
+        const isSelf = sender.id === id;
+
+        const container = document.createElement("div");
+        container.className = `${
+          isSelf ? "flex justify-end" : "flex justify-start"
+        }`;
+
+        const messageWrapper = document.createElement("div");
+        messageWrapper.className = "flex flex-col";
+
+        const bubble = document.createElement("div");
+        bubble.className = `bubble ${isSelf ? "bubble-right" : "bubble-left"}`;
+
+        if (!isSelf) {
+          const name = document.createElement("div");
+          name.className = "text-xs font-semibold mb-1";
+          name.textContent = sender.name;
+          messageWrapper.appendChild(name);
         }
 
-        function uuidv4() {
-            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-            );
+        const textDiv = document.createElement("div");
+        textDiv.className = "text-sm w-full";
+
+        if (fileData) {
+          const img = document.createElement("img");
+          img.src = fileData;
+          img.alt = "sent file";
+          img.className = "max-w-[200px] rounded-md";
+          textDiv.appendChild(img);
+        } else {
+          textDiv.textContent = text;
         }
 
+        const time = document.createElement("div");
+        time.className = `text-xs ${
+          isSelf ? "text-right" : "text-left"
+        } text-gray-500 mt-1`;
+        time.textContent = formatTime();
 
-        function sendMessage(fileData = null) {
-            const message = input.value.trim();
-            const sender = { id, name: username };
-            if (!message && !fileData) return;
+        bubble.appendChild(textDiv);
+        messageWrapper.appendChild(bubble);
+        messageWrapper.append(time);
+        container.appendChild(messageWrapper);
+        chatDiv.appendChild(container);
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+      }
 
-            const payload = {
-                type: 'message',
-                sender
-            }
-        
-            if (fileData) {
-                payload.file = fileData;
-            } else {
-                payload.text = message;
-            }
+      function notifyTyping() {
+        ws.send(
+          JSON.stringify({ type: "typing", sender: { id, name: username } })
+        );
+      }
 
-            ws.send(JSON.stringify(payload));
-
-            if (fileData) {
-                console.log(sender)
-                createMessageBubble("[file]", sender, fileData);
-            } else {
-                createMessageBubble(message, sender);
-                input.value = '';
-            }
+      function handleKeyDown(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage();
         }
+      }
 
-        function createNotification(text) {
-            const container = document.createElement('div');
-            container.className = 'text-center text-gray-400 text-sm italic';
-            container.textContent = text;
-            chatDiv.appendChild(container);
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        }
-
-        function createMessageBubble(text, sender, fileData = null) {
-            const isSelf = sender.id === id;
-
-            const container = document.createElement('div');
-            container.className = `${isSelf ? 'flex justify-end' : 'flex justify-start'}`;
-
-            const messageWrapper = document.createElement('div');
-            messageWrapper.className = 'flex flex-col';
-            
-            const bubble = document.createElement('div');
-            bubble.className = `bubble ${isSelf ? 'bubble-right' : 'bubble-left'}`;
-
-            if (!isSelf) {
-                const name = document.createElement('div');
-                name.className = 'text-xs font-semibold mb-1';
-                name.textContent = sender.name;
-                messageWrapper.appendChild(name);
-            }
-
-            const textDiv = document.createElement('div');
-            textDiv.className = 'text-sm w-full';
-
-            if (fileData) {
-                const img = document.createElement('img');
-                img.src = fileData;
-                img.alt = "sent file";
-                img.className = "max-w-[200px] rounded-md";
-                textDiv.appendChild(img);
-            } else {
-                textDiv.textContent = text;
-            }
-
-            const time = document.createElement('div');
-            time.className = `text-xs ${isSelf ? 'text-right' : 'text-left'} text-gray-500 mt-1`;
-            time.textContent = formatTime();
-            
-            bubble.appendChild(textDiv);
-            messageWrapper.appendChild(bubble);
-            messageWrapper.append(time);
-            container.appendChild(messageWrapper);
-            chatDiv.appendChild(container);
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        }
-
-
-        function notifyTyping() {
-            ws.send(JSON.stringify({ type: 'typing', sender: { id, name: username }, }));
-        }
-
-        function handleKeyDown(event) {
-            if (event.key === 'Enter' && !event.shiftKey) { 
-                event.preventDefault();
-                sendMessage();
-            }
-        }
-
-        function formatTime() {
-            const now = new Date();
-            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
-        function sendJoin() {
-            ws.send(JSON.stringify({ type: 'join', sender: { id, name: username } }));
-        }
-
-        function sendClose() {
-            ws.send(JSON.stringify({ type: 'leave', sender: { id, name: username } }));
-        }
-
-        function toggleEmojiPicker() {
-            picker.classList.toggle('hidden');
-        }
-
-        picker.addEventListener('emoji-click', event => {
-            input.value += event.detail.unicode;
-            input.focus();
+      function formatTime() {
+        const now = new Date();
+        return now.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
         });
+      }
 
-        fileInput.addEventListener('change', () => {
-            const file = fileInput.files[0];
-            if (!file) return;
+      function sendJoin() {
+        ws.send(
+          JSON.stringify({ type: "join", sender: { id, name: username } })
+        );
+      }
 
-            const reader = new FileReader();
-            reader.onload = () => {
-                const base64 = reader.result;
+      function sendClose() {
+        ws.send(
+          JSON.stringify({ type: "leave", sender: { id, name: username } })
+        );
+      }
 
-                const previewContainer = document.getElementById('preview-container');
-                const previewImg = document.getElementById('preview-img');
-                previewImg.src = base64;
-                previewContainer.classList.remove('hidden');
+      function toggleEmojiPicker() {
+        picker.classList.toggle("hidden");
+      }
 
-                const sendBtn = document.querySelector('button[onclick="sendMessage()"]');
-                sendBtn.onclick = () => {
-                    sendMessage(base64);
-                    previewContainer.classList.add('hidden');
-                    fileInput.value = "";
-                }
+      picker.addEventListener("emoji-click", (event) => {
+        input.value += event.detail.unicode;
+        input.focus();
+      });
 
-                const cancelPreview = document.querySelector('button[onclick="cancelPreview()"]');
-                cancelPreview.onclick = () => {
-                    previewContainer.classList.add('hidden');
-                    fileInput.value = "";
-                }
-            };
-            reader.readAsDataURL(file);
-        })
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (!file) return;
 
-        document.addEventListener('click', function (event) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result;
+
+          const previewContainer = document.getElementById("preview-container");
+          const previewImg = document.getElementById("preview-img");
+          previewImg.src = base64;
+          previewContainer.classList.remove("hidden");
+
+          const sendBtn = document.querySelector(
+            'button[onclick="sendMessage()"]'
+          );
+          sendBtn.onclick = () => {
+            sendMessage(base64);
+            previewContainer.classList.add("hidden");
+            fileInput.value = "";
+          };
+
+          const cancelPreview = document.querySelector(
+            'button[onclick="cancelPreview()"]'
+          );
+          cancelPreview.onclick = () => {
+            previewContainer.classList.add("hidden");
+            fileInput.value = "";
+          };
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.addEventListener("click", function (event) {
         const isClickInsidePicker = picker.contains(event.target);
-        const isClickOnToggleButton = document.getElementById('messageEmoji').contains(event.target);
+        const isClickOnToggleButton = document
+          .getElementById("messageEmoji")
+          .contains(event.target);
 
         if (!isClickInsidePicker && !isClickOnToggleButton) {
-            picker.classList.add('hidden');
+          picker.classList.add("hidden");
         }
-    });
+      });
+    </script>
 
-        </script>
-</body>
-
-
+  </body>
 </html>
